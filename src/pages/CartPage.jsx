@@ -1,71 +1,69 @@
-import { useMemo } from 'react';
-import { useCart } from '../context/CartContext.jsx';
+import React from "react";
+import { useCart } from "../context/CartContext";
+import { Link } from "react-router-dom";
 
-export default function CartPage({ onGoToOrder = () => {} }) {
-  const { cart, updateCartQuantity, removeFromCart } = useCart();
-
-  const total = useMemo(
-    () => cart.reduce((sum, item) => sum + item.price * (item.quantity / item.min), 0),
-    [cart],
-  );
-
-  if (!cart.length) {
-    return <div className="empty">Корзина пуста</div>;
-  }
+export default function CartPage() {
+  const { items, total, setItemQuantity, removeItem } = useCart();
 
   return (
-    <div className="cart">
-      {cart.map((item) => {
-        const itemTotal = item.price * (item.quantity / item.min);
-        const maxBundles = item.stock / item.min;
-        return (
-          <div className="cart-item" key={item.id}>
-            {item.image && <img src={item.image} className="cart-img" alt={item.name} />}
+    <div style={{ padding: 16 }}>
+      <h2>Корзина</h2>
 
-            <div className="cart-info">
-              <div className="cart-name">{item.name}</div>
+      {items.length === 0 && <p>Корзина пуста</p>}
 
-              <div className="qty-controls">
-                <button
-                  className="qty-btn cart-minus"
-                  onClick={() => updateCartQuantity(item.id, Math.max(item.min, item.quantity - item.min))}
-                >
-                  -
-                </button>
-                <span className="cart-qty-value">
-                  {item.quantity} шт ({item.quantity / item.min} охапки)
-                </span>
-                <button
-                  className="qty-btn cart-plus"
-                  onClick={() => {
-                    const next = item.quantity + item.min;
-                    if (next > item.stock) return;
-                    updateCartQuantity(item.id, next);
-                  }}
-                >
-                  +
-                </button>
-              </div>
+      {items.map((item) => (
+        <div
+          key={item.id}
+          style={{
+            padding: 12,
+            border: "1px solid #eee",
+            borderRadius: 10,
+            marginTop: 12,
+            background: "white",
+          }}
+        >
+          <h4>{item.name}</h4>
+          <p>{item.price} ₽</p>
 
-              <div className="cart-price">{itemTotal} ₽</div>
-              <div className="cart-stock">Осталось: {maxBundles} охапок</div>
-            </div>
+          <div style={{ display: "flex", gap: 10 }}>
+            <button onClick={() => setItemQuantity(item.id, item.quantity - 1)}>
+              -
+            </button>
 
-            <button className="remove-btn" onClick={() => removeFromCart(item.id)}>
-              ×
+            <span>{item.quantity}</span>
+
+            <button onClick={() => setItemQuantity(item.id, item.quantity + 1)}>
+              +
             </button>
           </div>
-        );
-      })}
 
-      <div className="cart-summary">
-        <div>Итого:</div>
-        <div>{total} ₽</div>
-      </div>
+          <button
+            onClick={() => removeItem(item.id)}
+            style={{ marginTop: 8, color: "red" }}
+          >
+            Удалить
+          </button>
+        </div>
+      ))}
 
-      <button className="cart-to-order-btn" onClick={onGoToOrder}>
-        Перейти к оформлению
-      </button>
+      {items.length > 0 && (
+        <Link to="/checkout">
+          <button
+            style={{
+              width: "100%",
+              marginTop: 20,
+              padding: 14,
+              background: "#2a7bf6",
+              color: "white",
+              border: "none",
+              borderRadius: 10,
+              fontSize: 17,
+            }}
+          >
+            Перейти к оформлению – {total} ₽
+          </button>
+        </Link>
+      )}
     </div>
   );
 }
