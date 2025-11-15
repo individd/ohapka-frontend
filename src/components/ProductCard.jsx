@@ -15,7 +15,7 @@ export default function ProductCard({ product }) {
       }}
     >
       <img
-        src={product.images?.[0]}
+        src={product.images}
         alt=""
         style={{
           width: "100%",
